@@ -12,6 +12,22 @@ import {
   createAssociatedTokenAccount,
   getAccount
 } from "@solana/spl-token";
+import * as crypto from "crypto";
+import { assert } from "chai";
+
+// Helper function to generate a unique transaction ID
+function generateTransactionId(): Uint8Array {
+  // Generate a random 32-byte array for transaction ID
+  return crypto.randomBytes(32);
+}
+
+// Update the IDL type to include the transactionId parameter
+// This is needed because the generated types don't include our new parameter yet
+interface CustomMintTokensArgs {
+  vehicleType: string;
+  meters: anchor.BN;
+  transactionId: number[];
+}
 
 describe("cycleback", () => {
   // Configure the client to use the local cluster.
@@ -32,6 +48,9 @@ describe("cycleback", () => {
   const initialScooterRate = new anchor.BN(5); // 5 tokens per meter for scooters
   const initialBikeRate = new anchor.BN(10);  // 10 tokens per meter for bikes
   const initialElectricBikeRate = new anchor.BN(8); // 8 tokens per meter for electric vehicles
+
+  // Store transaction IDs to demonstrate duplicate checking
+  const usedTransactionIds: Uint8Array[] = [];
 
   it("Initializes the program", async () => {
     console.log("Initializing program with state account:", stateAccount.publicKey.toString());
@@ -175,12 +194,11 @@ describe("cycleback", () => {
     console.log("Minting tokens for scooter ride...");
     
     const meters = new anchor.BN(100); // 100 meters traveled
+    const transactionId = generateTransactionId();
+    usedTransactionIds.push(transactionId);
     
-    // Prepare method and accounts separately
-    const method = program.methods
-      .mintTokens("scooter", meters);
-      
-    const accountsContext = {
+    // Get the standard accounts structure for minting
+    const accounts = {
       stateAccount: stateAccount.publicKey,
       mint: cyclebackMint.publicKey,
       tokenAccount: userTokenAccount,
@@ -188,9 +206,15 @@ describe("cycleback", () => {
       tokenProgram: TOKEN_PROGRAM_ID,
     };
     
-    const tx = await method
-      .accounts(accountsContext)
-      .rpc();
+    // Call the RPC method directly with the accounts and arguments
+    const tx = await program.rpc.mintTokens(
+      "scooter", 
+      meters, 
+      Array.from(transactionId),
+      {
+        accounts: accounts
+      }
+    );
       
     console.log("Tokens minted for scooter ride! Tx signature:", tx);
     
@@ -203,12 +227,11 @@ describe("cycleback", () => {
     console.log("Minting tokens for bike ride...");
     
     const meters = new anchor.BN(50); // 50 meters traveled
+    const transactionId = generateTransactionId();
+    usedTransactionIds.push(transactionId);
     
-    // Prepare method and accounts separately
-    const method = program.methods
-      .mintTokens("bike", meters);
-      
-    const accountsContext = {
+    // Get the standard accounts structure for minting
+    const accounts = {
       stateAccount: stateAccount.publicKey,
       mint: cyclebackMint.publicKey,
       tokenAccount: userTokenAccount,
@@ -216,9 +239,15 @@ describe("cycleback", () => {
       tokenProgram: TOKEN_PROGRAM_ID,
     };
     
-    const tx = await method
-      .accounts(accountsContext)
-      .rpc();
+    // Call the RPC method directly with the accounts and arguments
+    const tx = await program.rpc.mintTokens(
+      "bike", 
+      meters, 
+      Array.from(transactionId),
+      {
+        accounts: accounts
+      }
+    );
       
     console.log("Tokens minted for bike ride! Tx signature:", tx);
     
@@ -231,12 +260,11 @@ describe("cycleback", () => {
     console.log("Minting tokens for electric ride...");
     
     const meters = new anchor.BN(75); // 75 meters traveled
+    const transactionId = generateTransactionId();
+    usedTransactionIds.push(transactionId);
     
-    // Prepare method and accounts separately
-    const method = program.methods
-      .mintTokens("electric", meters);
-      
-    const accountsContext = {
+    // Get the standard accounts structure for minting
+    const accounts = {
       stateAccount: stateAccount.publicKey,
       mint: cyclebackMint.publicKey,
       tokenAccount: userTokenAccount,
@@ -244,14 +272,56 @@ describe("cycleback", () => {
       tokenProgram: TOKEN_PROGRAM_ID,
     };
     
-    const tx = await method
-      .accounts(accountsContext)
-      .rpc();
+    // Call the RPC method directly with the accounts and arguments
+    const tx = await program.rpc.mintTokens(
+      "electric", 
+      meters, 
+      Array.from(transactionId),
+      {
+        accounts: accounts
+      }
+    );
       
     console.log("Tokens minted for electric ride! Tx signature:", tx);
     
     // Get token balance
     const tokenAccount = await getAccount(provider.connection, userTokenAccount);
     console.log("Final token balance:", tokenAccount.amount.toString());
+  });
+
+  it("Rejects duplicate transaction ID", async () => {
+    console.log("Testing duplicate transaction ID rejection...");
+    
+    const meters = new anchor.BN(30); // 30 meters traveled
+    // Use a previously used transaction ID to test duplicate detection
+    const duplicateTransactionId = usedTransactionIds[0];
+    
+    try {
+      // Get the standard accounts structure for minting
+      const accounts = {
+        stateAccount: stateAccount.publicKey,
+        mint: cyclebackMint.publicKey,
+        tokenAccount: userTokenAccount,
+        owner: wallet.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      };
+      
+      // Call the RPC method directly with the accounts and arguments
+      await program.rpc.mintTokens(
+        "scooter", 
+        meters, 
+        Array.from(duplicateTransactionId),
+        {
+          accounts: accounts
+        }
+      );
+        
+      assert.fail("The transaction should have failed due to duplicate transaction ID");
+    } catch (error) {
+      console.log("Successfully rejected duplicate transaction ID");
+      console.log("Error:", error.message);
+      // Verify that the error is due to duplicate transaction ID
+      assert.ok(error.message.includes("DuplicateTransactionId"));
+    }
   });
 });
