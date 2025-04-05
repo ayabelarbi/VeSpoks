@@ -1,5 +1,5 @@
 import {Request, Response, Router} from 'express';
-import {Login, Signin, Wallet} from "../dto";
+import {Login, LoginVerify, Signin, Wallet} from "../dto";
 import mongoose from "mongoose";
 
 const mongo = async (): Promise<void> => {
@@ -53,10 +53,27 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 })
 
-router.get('/login/verify', async (req: Request, res: Response): Promise<void> => {
+router.post('/login/verify', async (req: Request, res: Response): Promise<void> => {
     try {
-        console.log("verify");
-        res.status(200).json({message: "verify"});
+        const loginVerify = req.body as LoginVerify;
+        const wallet = await Wallet.findOne({wallet: loginVerify.wallet});
+        if (wallet) {
+            const url = 'https://web-production.lime.bike/api/rider/v1/login';
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    login_code: loginVerify.otp,
+                    phone: wallet.phone
+                })
+            });
+            const json = await response.json();
+            res.status(response.status).json(json);
+        } else {
+            res.status(404).json({not_found: JSON.stringify(loginVerify)});
+        }
     } catch (error) {
         res.status(500).json({message: "Internal Server Error"});
     }
