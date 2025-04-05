@@ -43,8 +43,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
                     "Content-Type": "application/json"
                 }
             })
-            const json = await response.json();
-            res.status(response.status).json(JSON.stringify(json));
+            res.status(response.status).json({phone: wallet.phone});
 
         } else {
             res.status(404).json({not_found: JSON.stringify(login)});
