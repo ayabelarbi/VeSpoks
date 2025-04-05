@@ -1,0 +1,20 @@
+{
+  "name": "rewards-sdk",
+  "version": "1.0.0",
+  "description": "rewards minting for solana hackathon",
+  "license": "ISC",
+  "author": "Rhys Morgan",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@solana-developers/helpers": "^2.8.1",
+    "@solana/kit": "^2.1.0",
+    "@solana/web3.js": "^1.98.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0"
+  }
+}
