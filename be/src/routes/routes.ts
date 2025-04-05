@@ -36,7 +36,16 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         const login = req.body as Login;
         const wallet = await Wallet.findOne({wallet: login.wallet});
         if (wallet) {
-            res.status(200).json({ok: JSON.stringify(wallet)});
+            const url = `https://web-production.lime.bike/api/rider/v1/login?phone=${encodeURIComponent(wallet.phone)}`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            const json = await response.json();
+            res.status(response.status).json(JSON.stringify(json));
+
         } else {
             res.status(404).json({not_found: JSON.stringify(login)});
         }
