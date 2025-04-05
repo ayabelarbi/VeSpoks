@@ -31,6 +31,7 @@ describe("cycleback", () => {
   // Default values for initialization
   const initialScooterRate = new anchor.BN(5); // 5 tokens per meter for scooters
   const initialBikeRate = new anchor.BN(10);  // 10 tokens per meter for bikes
+  const initialElectricBikeRate = new anchor.BN(8); // 8 tokens per meter for electric vehicles
 
   it("Initializes the program", async () => {
     console.log("Initializing program with state account:", stateAccount.publicKey.toString());
@@ -39,7 +40,8 @@ describe("cycleback", () => {
     const method = program.methods
       .initialize(
         initialScooterRate,
-        initialBikeRate
+        initialBikeRate,
+        initialElectricBikeRate
       );
       
     // Then get the proper accounts context shape from Anchor
@@ -59,8 +61,9 @@ describe("cycleback", () => {
 
     // Verify the values were set correctly
     const state = await program.account.programState.fetch(stateAccount.publicKey);
-    console.log("Scooter rate:", state.cyclebackPerScooterMeters.toString());
-    console.log("Bike rate:", state.cyclebackPerBikeMeters.toString());
+    console.log("Scooter rate:", state.scooterRewardRate.toString());
+    console.log("Bike rate:", state.bikeRewardRate.toString());
+    console.log("Electric bike rate:", state.electricBikeRewardRate.toString());
     
     // Verify owner was set correctly
     console.log("Owner:", state.owner.toString());
@@ -74,7 +77,7 @@ describe("cycleback", () => {
     
     // Prepare method and accounts separately
     const method = program.methods
-      .updateValueCyclebackPerScooterMeters(newScooterRate);
+      .updateValueScooterRewardRate(newScooterRate);
       
     const accountsContext = {
       stateAccount: stateAccount.publicKey,
@@ -89,7 +92,7 @@ describe("cycleback", () => {
     
     // Verify the update
     const state = await program.account.programState.fetch(stateAccount.publicKey);
-    console.log("New scooter rate:", state.cyclebackPerScooterMeters.toString());
+    console.log("New scooter rate:", state.scooterRewardRate.toString());
   });
 
   it("Updates the bike rate", async () => {
@@ -99,7 +102,7 @@ describe("cycleback", () => {
     
     // Prepare method and accounts separately
     const method = program.methods
-      .updateValueCyclebackPerBikeMeters(newBikeRate);
+      .updateValueBikeRewardRate(newBikeRate);
       
     const accountsContext = {
       stateAccount: stateAccount.publicKey,
@@ -114,7 +117,32 @@ describe("cycleback", () => {
     
     // Verify the update
     const state = await program.account.programState.fetch(stateAccount.publicKey);
-    console.log("New bike rate:", state.cyclebackPerBikeMeters.toString());
+    console.log("New bike rate:", state.bikeRewardRate.toString());
+  });
+
+  it("Updates the electric rate", async () => {
+    console.log("Updating electric rate...");
+    
+    const newElectricRate = new anchor.BN(15); // 15 tokens per meter
+    
+    // Prepare method and accounts separately
+    const method = program.methods
+      .updateValueElectricBikeRewardRate(newElectricRate);
+      
+    const accountsContext = {
+      stateAccount: stateAccount.publicKey,
+      owner: wallet.publicKey,
+    };
+    
+    const tx = await method
+      .accounts(accountsContext)
+      .rpc();
+      
+    console.log("Electric rate updated! Tx signature:", tx);
+    
+    // Verify the update
+    const state = await program.account.programState.fetch(stateAccount.publicKey);
+    console.log("New electric bike rate:", state.electricBikeRewardRate.toString());
   });
 
   it("Creates token mint and user token account", async () => {
@@ -193,6 +221,34 @@ describe("cycleback", () => {
       .rpc();
       
     console.log("Tokens minted for bike ride! Tx signature:", tx);
+    
+    // Get token balance
+    const tokenAccount = await getAccount(provider.connection, userTokenAccount);
+    console.log("Token balance after bike ride:", tokenAccount.amount.toString());
+  });
+
+  it("Mints tokens for electric ride", async () => {
+    console.log("Minting tokens for electric ride...");
+    
+    const meters = new anchor.BN(75); // 75 meters traveled
+    
+    // Prepare method and accounts separately
+    const method = program.methods
+      .mintTokens("electric", meters);
+      
+    const accountsContext = {
+      stateAccount: stateAccount.publicKey,
+      mint: cyclebackMint.publicKey,
+      tokenAccount: userTokenAccount,
+      owner: wallet.publicKey,
+      tokenProgram: TOKEN_PROGRAM_ID,
+    };
+    
+    const tx = await method
+      .accounts(accountsContext)
+      .rpc();
+      
+    console.log("Tokens minted for electric ride! Tx signature:", tx);
     
     // Get token balance
     const tokenAccount = await getAccount(provider.connection, userTokenAccount);
