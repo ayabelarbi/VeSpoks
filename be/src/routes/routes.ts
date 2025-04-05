@@ -1,18 +1,32 @@
 import {Request, Response, Router} from 'express';
-import {Phone} from "../dto";
+import {IPhone, Phone} from "../dto";
+import mongoose from "mongoose";
 
+
+const mongo = async (): Promise<void> => {
+    try {
+        await mongoose.connect('mongodb://localhost:27017/vemob');
+        console.log('Connected to MongoDB');
+    } catch (error) {
+        console.error('Error connecting to MongoDB:', error);
+        throw error;
+    }
+};
+mongo();
 
 const router: Router = Router();
 
-/**
- * As solver REST service administrator, revert all un-reverted transfers
- * in chronological order from the most recent to the oldest.
- */
 router.post('/phone', async (req: Request, res: Response): Promise<void> => {
     try {
-        const phone = req.body as Phone;
+        const phone = req.body as IPhone;
         console.log(req.body);
-        res.status(200).json(JSON.stringify(phone));
+        const isNew = !await Phone.exists({imsi: phone.imsi});
+        if (isNew) {
+            await Phone.create(phone);
+            res.status(201).json(JSON.stringify(phone));
+        } else {
+            res.status(200).json(JSON.stringify(phone));
+        }
     } catch (error) {
         res.status(500).json({message: "Internal Server Error"});
     }
