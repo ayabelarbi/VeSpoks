@@ -1,5 +1,5 @@
 import {Request, Response, Router} from 'express';
-import {IPhone, Phone} from "../dto";
+import {Login, Phone} from "../dto";
 import mongoose from "mongoose";
 
 
@@ -16,21 +16,30 @@ mongo();
 
 const router: Router = Router();
 
-router.post('/phone', async (req: Request, res: Response): Promise<void> => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
     try {
-        const phone = req.body as IPhone;
+        const login = req.body as Login;
         console.log(req.body);
-        const isNew = !await Phone.exists({imsi: phone.imsi});
+        const isNew = !await Phone.exists({imsi: login.imsi});
         if (isNew) {
-            await Phone.create(phone);
-            res.status(201).json(JSON.stringify(phone));
+            await Phone.create({imsi: login.imsi});
+            res.status(201).json(JSON.stringify(login));
         } else {
-            res.status(200).json(JSON.stringify(phone));
+            res.status(200).json(JSON.stringify(login));
         }
     } catch (error) {
         res.status(500).json({message: "Internal Server Error"});
     }
 })
+
+router.get('/reset', async (_req: Request, res: Response): Promise<void> => {
+    try {
+        await Phone.deleteMany();
+        res.status(200).json({message: "Reset"});
+    } catch (error) {
+        res.status(500).json({message: "Reset Error"});
+    }
+});
 
 
 export default router;
