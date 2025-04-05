@@ -38,7 +38,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         if (wallet) {
             const url = `https://web-production.lime.bike/api/rider/v1/login?phone=${encodeURIComponent(wallet.phone)}`;
             const response = await fetch(url, {
-                method: "GET",
+                method: 'GET',
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -60,7 +60,7 @@ router.post('/login/verify', async (req: Request, res: Response): Promise<void> 
         if (wallet) {
             const url = 'https://web-production.lime.bike/api/rider/v1/login';
             const response = await fetch(url, {
-                method: "POST",
+                method: 'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -69,8 +69,13 @@ router.post('/login/verify', async (req: Request, res: Response): Promise<void> 
                     phone: wallet.phone
                 })
             });
-            const json = await response.json();
-            res.status(response.status).json(json);
+            if (response.ok) {
+                const json = await response.json();
+                res.status(response.status).json(json);
+            }
+            else {
+                res.status(response.status).send();
+            }
         } else {
             res.status(404).json({not_found: JSON.stringify(loginVerify)});
         }
