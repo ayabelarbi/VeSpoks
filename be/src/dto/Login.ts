@@ -1,7 +1,6 @@
-import {IPhone} from "./Phone";
-
-interface Login extends IPhone {
-    provider: string
+interface Login {
+    provider: string,
+    wallet: string,
 }
 
 export {Login};
