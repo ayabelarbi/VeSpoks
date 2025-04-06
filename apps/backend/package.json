@@ -7,7 +7,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc",
+    "tx": "npm run build && node ./dist/examples/rewardsExample.js"
   },
   "dependencies": {
     "@solana-developers/helpers": "^2.8.1",
