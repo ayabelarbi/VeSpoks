@@ -16,11 +16,25 @@ mongo();
 const router: Router = Router();
 
 router.get('/check-signin', async (req: Request, res: Response): Promise<void> => {
-    const wallet = await Wallet.findOne({wallet: req.body.wallet});
-    if (wallet) {
-        res.status(200).json({signedIn: true});
-    } else {
-        res.status(404).json({signedIn: false});
+    try {
+        const walletAddress = req.query.wallet as string;
+        
+        if (!walletAddress) {
+            console.log(walletAddress);
+            console.log(Wallet);
+            res.status(400).json({ error: 'Wallet address is required' });
+            return;
+        }
+
+        const wallet = await Wallet.findOne({ wallet: walletAddress });
+        if (wallet) {
+            res.status(200).json({ signedIn: true });
+        } else {
+            res.status(404).json({ signedIn: false });
+        }
+    } catch (error) {
+        console.error('Error checking signin:', error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
