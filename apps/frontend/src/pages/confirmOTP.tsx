@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { VStack, Text, Button, Input, useToast, Box } from '@chakra-ui/react';
+import { VStack, Text, Button, Input, Box } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+// import { api } from '../services/api';
 import { useWallet } from '@solana/wallet-adapter-react';
 
 export default function ConfirmOTP() {
-  const [phone, setPhone] = useState('');
+  // const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
+  // const toast = useToast();
   const navigate = useNavigate();
   const { publicKey } = useWallet();
 
