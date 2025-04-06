@@ -3,7 +3,7 @@ import {Data, Login, LoginVerify, Signin, User, Wallet} from "../dto";
 import mongoose from "mongoose";
 import {Claim} from "../dto/Claim";
 import {PublicKey} from "@solana/web3.js";
-import {Rewards} from "@/tx/rewards";
+import {Rewards} from '../tx/rewards';
 
 const mongo = async (): Promise<void> => {
     try {

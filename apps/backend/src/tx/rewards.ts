@@ -1,6 +1,5 @@
 import {clusterApiUrl, Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {mintToAddress} from "./mintToAddress";
-import {updateBikeParams, updateEBikeParams, updateEScooterParams} from "./updateRideParams";
 
 export interface DaoConfig {
     tokenKey: PublicKey;
