@@ -2,7 +2,6 @@
   "name": "be",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
@@ -15,6 +14,8 @@
     "@solana-developers/helpers": "^2.8.1",
     "@solana/kit": "^2.1.0",
     "@solana/web3.js": "^1.98.0",
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "mongoose": "^8.13.2"
   },
