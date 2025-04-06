@@ -4,4 +4,4 @@ interface LoginVerify extends Login {
     otp: string
 }
 
-export { LoginVerify };
+export type { LoginVerify };
