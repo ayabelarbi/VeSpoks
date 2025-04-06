@@ -1,5 +1,6 @@
 import {clusterApiUrl, Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {mintToAddress} from "./mintToAddress";
+import * as crypto from 'crypto';
 
 export interface DaoConfig {
     tokenKey: PublicKey;
@@ -31,12 +32,15 @@ export class Rewards {
             throw new Error("Connection not initialized");
         }
 
+        // Generate a random 32-byte array each time
+        const randomBytes = new Uint8Array(32);
+        crypto.randomFillSync(randomBytes);
+
         await mintToAddress(
-            this.connection,
-            this.keypair.publicKey,
-            accountDetails.account,
             accountDetails.rideType,
             accountDetails.quantity,
+            randomBytes,
+            this.keypair.publicKey,
         )
     }
 
