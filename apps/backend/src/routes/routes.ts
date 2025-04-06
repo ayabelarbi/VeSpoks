@@ -1,21 +1,10 @@
 import {Request, Response, Router} from 'express';
 
 import {Data, Login, LoginVerify, Signin, User, Wallet} from "../dto/index";
-import mongoose from "mongoose";
 import {Claim} from "../dto/Claim";
 import {PublicKey} from "@solana/web3.js";
-import {Rewards} from '../tx/rewards';
-
-const mongo = async (): Promise<void> => {
-    try {
-        await mongoose.connect('mongodb://localhost:27017/vemob');
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-        throw error;
-    }
-};
-mongo();
+import { mintToAddress } from '../tx/mintToAddress';
+import * as crypto from 'crypto';
 
 const router: Router = Router();
 
@@ -117,6 +106,7 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
     try {
         const claim = req.body as Claim;
         const wallet = await Wallet.findOne({wallet: claim.wallet});
+
         if (wallet) {
             const url = 'https://web-production.lime.bike/api/rider/v1/user';
             const response = await fetch(url, {
@@ -132,14 +122,22 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
                 const trips = data.data.attributes.num_trips ?? 0;
                 const quantity = trips - (wallet.trips ?? 0);
                 wallet.trips = trips;
-                const rewards = new Rewards();
-                await rewards.connect("devnet");
-                await rewards.mintRewards({
-                    account: new PublicKey("GPjxmacrzWo1JQ2YmqNycQrutf3Ki89hGSfbwtzK4zZM"), // Replace with actual recipient address
-                    quantity: 1, // 10 kilometers traveled
-                    rideType: "bike" // Type of vehicle used
-                });
-                wallet.save();
+                
+                // Generate a unique random ID for this transaction
+                const id = new Uint8Array(32);
+                crypto.randomFillSync(id);
+
+                if (quantity > 0) {
+
+                    await mintToAddress(
+                        "bike",
+                        quantity,
+                        id,
+                        new PublicKey(claim.addressToMintTo),
+                    );
+                    wallet.save();
+                }
+                
                 res.status(response.status).json({rewards: quantity, trips: trips});
             } else {
                 res.status(response.status).send();
@@ -158,7 +156,6 @@ router.delete('/db', async (_req: Request, res: Response): Promise<void> => {
         res.status(500).json({message: "Reset Error"});
     }
 });
-
 
 export default router;
 
