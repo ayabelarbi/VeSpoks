@@ -87,6 +87,10 @@ router.post('/login/verify', async (req: Request, res: Response): Promise<void> 
     }
 })
 
+router.get('/claim', async (_req: Request, res: Response): Promise<void> => {
+
+})
+
 router.delete('/db', async (_req: Request, res: Response): Promise<void> => {
     try {
         await Wallet.deleteMany();
