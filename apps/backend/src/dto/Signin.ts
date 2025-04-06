@@ -5,4 +5,4 @@ interface Signin {
     wallet: string;
 }
 
-export {Signin};
+export type { Signin };
