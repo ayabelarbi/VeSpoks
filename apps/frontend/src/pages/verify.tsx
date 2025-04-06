@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState } from 'react';
 import { VStack, Text, Button, Input, useToast, Box } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,7 @@ export default function Verify() {
   // Check if user is connected with a wallet
   const walletAddress = publicKey ? publicKey.toBase58() : null;
 
+  console.log(setStep)
   // const handleSubmitPhone = async () => {
   //   if (!phone || !walletAddress) return;
 

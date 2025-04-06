@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 // import { api } from '../services/api';
 import { useWallet } from '@solana/wallet-adapter-react';
 
+/* eslint-disable */
 export default function ConfirmOTP() {
   // const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -13,6 +14,7 @@ export default function ConfirmOTP() {
   const navigate = useNavigate();
   const { publicKey } = useWallet();
 
+  console.log(setStep, setLoading)
   // Check if user is connected with a wallet
   const walletAddress = publicKey ? publicKey.toBase58() : null;
 
