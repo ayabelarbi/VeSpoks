@@ -133,7 +133,7 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
                         "bike",
                         quantity,
                         id,
-                        new PublicKey(claim.addressToMintTo),
+                        new PublicKey(claim.wallet),
                     );
                     wallet.save();
                 }
