@@ -5,7 +5,7 @@ import { createMintToInstruction } from "@solana/spl-token";
 
 export type RideTypes = "scooter" | "escooter" | "bike";
 
-export async function mintToAd2(
+export async function mintToAddress(
   connection: Connection,
   tokenAddress: PublicKey,
   account: PublicKey,

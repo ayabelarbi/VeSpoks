@@ -60,32 +60,6 @@ export async function updateEBikeParams(
   }
 }
 
-export async function updateScooterParams(
-  connection: Connection,
-  daoKey: PublicKey,
-  rideValues: number,
-) { 
-  const secretKey = Uint8Array.from(JSON.parse(process.env.SECRET_KEY || '[]'));
-  const keypair = Keypair.fromSecretKey(secretKey);
-  const provider = new AnchorProvider(connection, new Wallet(keypair), {});
-  const program = new Program<Cycleback>(idl as any, provider);
-
-  try {
-    const tx = await program.methods
-      .updateValueCyclebackPerScooterMeters(new anchor.BN(rideValues))
-      .accounts({
-        stateAccount: daoKey,
-        owner: provider.wallet.publicKey,
-      })
-      .rpc();
-    
-    return tx;
-  } catch (error) {
-    console.error("Error updating bike params:", error);
-    throw error;
-  }
-}
-
 export async function updateEScooterParams(
   connection: Connection,
   daoKey: PublicKey,
