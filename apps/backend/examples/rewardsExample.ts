@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { Rewards } from "../src/rewards";
+import { Rewards } from "../src/tx/rewards";
 
 async function main() {
   try {
