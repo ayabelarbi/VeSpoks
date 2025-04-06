@@ -3,4 +3,4 @@ interface Login {
     wallet: string,
 }
 
-export {Login};
+export type {Login};

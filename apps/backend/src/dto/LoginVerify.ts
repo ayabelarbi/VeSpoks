@@ -1,7 +1,7 @@
-import {Login} from "./Login";
+import type {Login} from "./Login";
 
 interface LoginVerify extends Login {
     otp: string
 }
 
-export { LoginVerify };
+export type { LoginVerify };

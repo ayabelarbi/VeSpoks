@@ -4,4 +4,4 @@ interface User {
     meta: unknown;
 }
 
-export {User};
+export type { User };

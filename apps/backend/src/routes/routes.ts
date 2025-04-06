@@ -1,17 +1,5 @@
 import {Request, Response, Router} from 'express';
-import {Login, LoginVerify, Signin, User, Wallet} from "../dto";
-import mongoose from "mongoose";
-
-const mongo = async (): Promise<void> => {
-    try {
-        await mongoose.connect('mongodb://localhost:27017/vemob');
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-        throw error;
-    }
-};
-mongo();
+import {Login, LoginVerify, Signin, User, Wallet} from "../dto/index";
 
 const router: Router = Router();
 

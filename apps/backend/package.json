@@ -2,18 +2,21 @@
   "name": "be",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "type": "commonjs",
   "scripts": {
-    "start": "ts-node src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
     "dev": "nodemon --watch src --ext ts,json --exec ts-node src/app.ts",
     "test": "jest"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "mongoose": "^8.13.2",
     "@solana-developers/helpers": "^2.8.1",
     "@solana/kit": "^2.1.0",
-    "@solana/web3.js": "^1.98.0"
+    "@solana/web3.js": "^1.98.0",
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.13.2"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
