@@ -1,6 +1,7 @@
 import {Request, Response, Router} from 'express';
 import {Login, LoginVerify, Signin, User, Wallet} from "../dto";
 import mongoose from "mongoose";
+import {Claim} from "../dto/Claim";
 
 const mongo = async (): Promise<void> => {
     try {
@@ -75,8 +76,7 @@ router.post('/login/verify', async (req: Request, res: Response): Promise<void> 
                 wallet.token = user.token;
                 await wallet.save();
                 res.status(response.status).json(json);
-            }
-            else {
+            } else {
                 res.status(response.status).send();
             }
         } else {
@@ -87,8 +87,24 @@ router.post('/login/verify', async (req: Request, res: Response): Promise<void> 
     }
 })
 
-router.get('/claim', async (_req: Request, res: Response): Promise<void> => {
+router.post('/claim', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const claim = req.body as Claim;
+        const wallet = await Wallet.findOne({wallet: claim.wallet});
+        if (wallet) {
+            const url = 'https://web-production.lime.bike/api/rider/v1/user';
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    "Authorization": `Bearer ${wallet.token}`,
+                    "Content-Type": "application/json"
+                }
+            });
 
+        }
+    } catch (error) {
+        res.status(500).json({message: "Internal Server Error"});
+    }
 })
 
 router.delete('/db', async (_req: Request, res: Response): Promise<void> => {
