@@ -7,12 +7,17 @@ skip-lint = false
 
 [programs.localnet]
 cycleback = "7o67cgqG8dZRBEw8zqb8m6aG2FHRpQShTTskGGs59FrU"
+oracle = "CarbN2rxkvGLJQECuKJ4y931xCGwbmL3Bbmi7W8KFjmT"
+
+[programs.devnet]
+cycleback = "7o67cgqG8dZRBEw8zqb8m6aG2FHRpQShTTskGGs59FrU"
+oracle = "CarbN2rxkvGLJQECuKJ4y931xCGwbmL3Bbmi7W8KFjmT"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
