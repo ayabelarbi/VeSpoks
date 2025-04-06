@@ -9,7 +9,10 @@
   },
   "dependencies": {
     "express": "^4.21.2",
-    "mongoose": "^8.13.2"
+    "mongoose": "^8.13.2",
+    "@solana-developers/helpers": "^2.8.1",
+    "@solana/kit": "^2.1.0",
+    "@solana/web3.js": "^1.98.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
