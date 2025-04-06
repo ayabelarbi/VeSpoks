@@ -1,5 +1,5 @@
 // API service for frontend
-const API_URL = 'http://localhost:3002/api/v1';
+const API_URL = 'http://localhost:3000/api/v1';
 
 // Interface for API responses
 interface ApiResponse<T = unknown> {

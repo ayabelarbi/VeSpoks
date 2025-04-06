@@ -16,13 +16,16 @@ import {
   ModalBody,
   ModalCloseButton,
   ModalFooter,
-  Icon
+  Icon, 
+  Image, 
+  HStack
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { FaBicycle, FaCar, FaBus, FaSubway } from 'react-icons/fa';
+import { FaBicycle } from 'react-icons/fa';
 import { MdElectricScooter } from 'react-icons/md';
 import { getUserData } from '../services/wallet-service';
-
+import Lime from '../../public/lime.svg';
+import Velib from '../../public/velib.png';
 interface AppCard {
   id: string;
   name: string;
@@ -49,14 +52,14 @@ export const SelectAppPage: React.FC = () => {
       color: '#4caf50',
       available: true
     },
-    {
-      id: 'velib',
-      name: 'Velib',
-      description: 'Shared bicycles across the city',
-      icon: FaBicycle,
-      color: '#2196f3',
-      available: true
-    }
+    // {
+    //   id: 'velib',
+    //   name: 'Velib',
+    //   description: 'Shared bicycles across the city',
+    //   icon: FaBicycle,
+    //   color: '#2196f3',
+    //   available: true
+    //}
   ];
 
   // const handleSelectApp = (app: AppCard) => {
@@ -76,8 +79,14 @@ export const SelectAppPage: React.FC = () => {
   return (
     <VStack spacing={8} align="center" justify="center" w="100%" p={8} bg="white" borderRadius="md">
       <Text fontSize="2xl" fontWeight="bold">Select your app</Text>
-      <Button onClick={() => navigate('/app/lime')}>Lime</Button>
-      <Button onClick={() => navigate('/app/velib')}>Velib</Button>
+      <HStack>
+      <Image src={Lime} alt="Lime" boxSize="50px" />
+        <Button onClick={() => navigate('/view-trips')}>Lime</Button>
+      </HStack>
+      <HStack>
+        <Image src={Velib} alt="Velib" boxSize="50px" />
+        <Button onClick={() => navigate('/view-trips')}>Velib</Button>
+      </HStack>
     </VStack>
   );
 };

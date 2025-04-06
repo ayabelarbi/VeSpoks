@@ -3,19 +3,18 @@ import { WalletButton } from '../components/solana/solana-provider'
 import VeCycleBack from '../assets/VeCycleBack.svg'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useNavigate } from 'react-router-dom'
-import { MdArrowOutward } from "react-icons/md";
+import { MdArrowOutward } from 'react-icons/md'
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-
 
 export default function Home() {
   const navigate = useNavigate()
   const { connected, publicKey } = useWallet()
-  const [signIn, setSignIn] = useState(false) 
+  const [signIn, setSignIn] = useState(false)
 
   useEffect(() => {
     const checkSignIn = async () => {
-      const response = await api.checkSignin({ wallet: publicKey?.toBase58() ?? "" })
+      const response = await api.checkSignin({ wallet: publicKey?.toBase58() ?? '' })
       const data = response.data as { signedIn: boolean }
       console.log(data)
       if (!data) {
@@ -27,7 +26,7 @@ export default function Home() {
     checkSignIn()
   }, [connected, publicKey])
 
-  // if i am sign in, redirect to select-app 
+  // if i am sign in, redirect to select-app
   // useEffect(() => {
   //   if (signIn) {
   //     navigate('/select-app')
