@@ -1,5 +1,5 @@
 import {Request, Response, Router} from 'express';
-import {Login, LoginVerify, Signin, Wallet} from "../dto";
+import {Login, LoginVerify, Signin, User, Wallet} from "../dto";
 import mongoose from "mongoose";
 
 const mongo = async (): Promise<void> => {
@@ -71,6 +71,9 @@ router.post('/login/verify', async (req: Request, res: Response): Promise<void> 
             });
             if (response.ok) {
                 const json = await response.json();
+                const user = json as User;
+                wallet.token = user.token;
+                await wallet.save();
                 res.status(response.status).json(json);
             }
             else {
