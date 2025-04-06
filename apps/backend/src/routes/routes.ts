@@ -1,7 +1,9 @@
 import {Request, Response, Router} from 'express';
-import {Login, LoginVerify, Signin, User, Wallet} from "../dto";
+import {Data, Login, LoginVerify, Signin, User, Wallet} from "../dto";
 import mongoose from "mongoose";
 import {Claim} from "../dto/Claim";
+import {PublicKey} from "@solana/web3.js";
+import {Rewards} from "@/tx/rewards";
 
 const mongo = async (): Promise<void> => {
     try {
@@ -19,7 +21,7 @@ const router: Router = Router();
 router.get('/check-signin', async (req: Request, res: Response): Promise<void> => {
     try {
         const walletAddress = req.query.wallet as string;
-        
+
         if (!walletAddress) {
             console.log(walletAddress);
             console.log(Wallet);
@@ -123,10 +125,27 @@ router.post('/claim', async (req: Request, res: Response): Promise<void> => {
                     "Content-Type": "application/json"
                 }
             });
-
+            if (response.ok) {
+                const json = await response.json();
+                const data = json as Data;
+                const trips = data.data.attributes.num_trips ?? 0;
+                const quantity = trips - (wallet.trips ?? 0);
+                wallet.trips = trips;
+                const rewards = new Rewards();
+                await rewards.connect("devnet");
+                await rewards.mintRewards({
+                    account: new PublicKey("GPjxmacrzWo1JQ2YmqNycQrutf3Ki89hGSfbwtzK4zZM"), // Replace with actual recipient address
+                    quantity: 1, // 10 kilometers traveled
+                    rideType: "bike" // Type of vehicle used
+                });
+                wallet.save();
+                res.status(response.status).json({rewards: quantity, trips: trips});
+            } else {
+                res.status(response.status).send();
+            }
         }
     } catch (error) {
-        res.status(500).json({message: "Internal Server Error"});
+        res.status(500).json({message: `${error}`});
     }
 })
 

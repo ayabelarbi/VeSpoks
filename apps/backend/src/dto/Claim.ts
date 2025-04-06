@@ -3,4 +3,4 @@ interface Claim {
     wallet: string;
 }
 
-export {Claim};
+export type {Claim};
