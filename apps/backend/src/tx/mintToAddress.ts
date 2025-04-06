@@ -1,44 +1,151 @@
 import "dotenv/config";
-import { getKeypairFromEnvironment } from "@solana-developers/helpers";
-import { Connection, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
-import { createMintToInstruction } from "@solana/spl-token";
-
 export type RideTypes = "scooter" | "escooter" | "bike";
 
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+  SystemProgram,
+} from "@solana/web3.js";
+import {
+  TOKEN_PROGRAM_ID,
+  MINT_SIZE,
+  createInitializeMintInstruction,
+  getMinimumBalanceForRentExemptMint,
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccountInstruction,
+} from "@solana/spl-token";
+import * as anchor from "@project-serum/anchor";
+import { programId, stateAccount } from "../utls/constants";
+import { adminKeypair } from "../utls/adminKeypair";
+
+// Core method for minting tokens
 export async function mintToAddress(
-  connection: Connection,
-  tokenAddress: PublicKey,
-  account: PublicKey,
-  rideType: string,
-  quantity: number,
-) {
-  if (tokenAddress === undefined) {
-    throw new Error("Token address is undefined")
-  }
+  vehicleType: string,
+  meters: number,
+  transactionId: Uint8Array,
+  recipientAddress: PublicKey
+): Promise<string> {
 
-  const mintInstruction = createMintToInstruction(
-    tokenAddress,
-    account,
-    getKeypairFromEnvironment("SECRET_KEY").publicKey,
-    quantity
+  // Connect to Solana devnet
+  const connection = new Connection(
+    "https://api.devnet.solana.com",
+    "confirmed"
   );
 
-  const transferInstruction = SystemProgram.transfer({
-    fromPubkey: new PublicKey(process.env.TOKEN_ADDRESS!),
-    toPubkey: account,
-    lamports: quantity * LAMPORTS_PER_SOL,
-    programId: new PublicKey(process.env.TOKEN_ADDRESS!),
-  });
+  // Use recipient address or wallet's address if not provided
+  const recipient = recipientAddress;
 
-  const transaction = new Transaction().add(mintInstruction, transferInstruction);
-  const transactionSignature = await sendAndConfirmTransaction(
-    connection,
-    transaction,
-    [
-      getKeypairFromEnvironment("SECRET_KEY"),
+
+  // Create a new mint keypair
+  const mintKeypair = Keypair.generate();
+
+  // Calculate rent for mint
+  const rentForMint = await getMinimumBalanceForRentExemptMint(connection);
+
+  // Get associated token address
+  const associatedTokenAddress = await getAssociatedTokenAddress(
+    mintKeypair.publicKey,
+    recipient
+  );
+
+  // Convert meters to BN
+  const metersBN = new anchor.BN(meters);
+
+  // Create IDL for program
+  const IDL = {
+    version: "0.1.0",
+    name: "cycleback",
+    instructions: [
+      {
+        name: "mint_tokens",
+        accounts: [
+          { name: "stateAccount", isMut: true, isSigner: false },
+          { name: "mint", isMut: true, isSigner: false },
+          { name: "tokenAccount", isMut: true, isSigner: false },
+          { name: "owner", isMut: false, isSigner: true },
+          { name: "tokenProgram", isMut: false, isSigner: false },
+        ],
+        args: [
+          { name: "vehicleType", type: "string" },
+          { name: "distance", type: "u64" },
+          { name: "transactionId", type: { array: ["u8", 32] } },
+        ],
+      },
     ],
+  };
+
+  // Create provider and program
+  const provider = new anchor.AnchorProvider(
+    connection,
+    new anchor.Wallet(adminKeypair),
+    { commitment: "confirmed" }
   );
 
-  return transactionSignature
-}
+  const program = new anchor.Program(IDL as any, programId, provider);
 
+  // Create mint_tokens instruction
+  const mintTokensIx = await program.methods
+    .mintTokens(vehicleType, metersBN, Array.from(transactionId))
+    .accounts({
+      stateAccount: stateAccount,
+      mint: mintKeypair.publicKey,
+      tokenAccount: associatedTokenAddress,
+      owner: adminKeypair.publicKey,
+      tokenProgram: TOKEN_PROGRAM_ID,
+    })
+    .instruction();
+
+  // Create transaction with all necessary instructions
+  const transaction = new Transaction();
+
+  // Add instruction to create mint account
+  transaction.add(
+    SystemProgram.createAccount({
+      fromPubkey: adminKeypair.publicKey,
+      newAccountPubkey: mintKeypair.publicKey,
+      space: MINT_SIZE,
+      lamports: rentForMint,
+      programId: TOKEN_PROGRAM_ID,
+    })
+  );
+
+  // Add instruction to initialize mint
+  transaction.add(
+    createInitializeMintInstruction(
+      mintKeypair.publicKey,
+      9, // 9 decimals
+      adminKeypair.publicKey,
+      adminKeypair.publicKey
+    )
+  );
+
+  // Add instruction to create associated token account
+  transaction.add(
+    createAssociatedTokenAccountInstruction(
+        adminKeypair.publicKey,
+      associatedTokenAddress,
+      recipient,
+      mintKeypair.publicKey
+    )
+  );
+
+  // Add mint_tokens instruction
+  transaction.add(mintTokensIx);
+
+  // Finalize transaction
+  transaction.feePayer = adminKeypair.publicKey;
+  transaction.recentBlockhash = (
+    await connection.getRecentBlockhash()
+  ).blockhash;
+
+  // Sign and send transaction
+  const signature = await sendAndConfirmTransaction(connection, transaction, [
+    adminKeypair,
+    mintKeypair,
+  ]);
+
+  return signature;
+}

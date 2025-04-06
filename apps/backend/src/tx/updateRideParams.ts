@@ -12,7 +12,7 @@ export async function updateBikeParams(
   connection: Connection,
   daoKey: PublicKey,
   rideValues: number,
-) { 
+) {
   const secretKey = Uint8Array.from(JSON.parse(process.env.SECRET_KEY || '[]'));
   const keypair = Keypair.fromSecretKey(secretKey);
   const provider = new AnchorProvider(connection, new Wallet(keypair), {});
@@ -20,13 +20,13 @@ export async function updateBikeParams(
 
   try {
     const tx = await program.methods
-      .updateValueCyclebackPerBikeMeters(new anchor.BN(rideValues))
+      .updateValueBikeRewardRate(new anchor.BN(rideValues))
       .accounts({
         stateAccount: daoKey,
         owner: provider.wallet.publicKey,
       })
       .rpc();
-    
+
     return tx;
   } catch (error) {
     console.error("Error updating bike params:", error);
@@ -38,7 +38,7 @@ export async function updateEBikeParams(
   connection: Connection,
   daoKey: PublicKey,
   rideValues: number,
-) { 
+) {
   const secretKey = Uint8Array.from(JSON.parse(process.env.SECRET_KEY || '[]'));
   const keypair = Keypair.fromSecretKey(secretKey);
   const provider = new AnchorProvider(connection, new Wallet(keypair), {});
@@ -46,13 +46,13 @@ export async function updateEBikeParams(
 
   try {
     const tx = await program.methods
-      .updateValueCyclebackPerBikeMeters(new anchor.BN(rideValues))
+      .updateValueElectricBikeRewardRate(new anchor.BN(rideValues))
       .accounts({
         stateAccount: daoKey,
         owner: provider.wallet.publicKey,
       })
       .rpc();
-    
+
     return tx;
   } catch (error) {
     console.error("Error updating bike params:", error);
@@ -64,7 +64,7 @@ export async function updateEScooterParams(
   connection: Connection,
   daoKey: PublicKey,
   rideValues: number,
-) { 
+) {
   const secretKey = Uint8Array.from(JSON.parse(process.env.SECRET_KEY || '[]'));
   const keypair = Keypair.fromSecretKey(secretKey);
   const provider = new AnchorProvider(connection, new Wallet(keypair), {});
@@ -72,13 +72,13 @@ export async function updateEScooterParams(
 
   try {
     const tx = await program.methods
-      .updateValueCyclebackPerScooterMeters(new anchor.BN(rideValues))
+      .updateValueScooterRewardRate(new anchor.BN(rideValues))
       .accounts({
         stateAccount: daoKey,
         owner: provider.wallet.publicKey,
       })
       .rpc();
-    
+
     return tx;
   } catch (error) {
     console.error("Error updating bike params:", error);
