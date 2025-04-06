@@ -15,6 +15,15 @@ mongo();
 
 const router: Router = Router();
 
+router.get('/check-signin', async (req: Request, res: Response): Promise<void> => {
+    const wallet = await Wallet.findOne({wallet: req.body.wallet});
+    if (wallet) {
+        res.status(200).json({signedIn: true});
+    } else {
+        res.status(404).json({signedIn: false});
+    }
+});
+
 router.post('/signin', async (req: Request, res: Response): Promise<void> => {
     try {
         const signin = req.body as Signin;
